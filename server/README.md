@@ -9,8 +9,6 @@
 ### LOGIN
 
 - authorizes client as reader of the upcomming emits
-- must contain key `PASSWORD` which is globaly set as single string
-- yes, its unsafe but guys its for 3-day art instalation calm down
 
 ### EMIT
 
