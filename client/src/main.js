@@ -9,11 +9,13 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
-var light = new THREE.DirectionalLight(0xffffff);
-light.position.set(-7, 2, 10).normalize();
+var light = new THREE.SpotLight(0xffffff);
+light.castShadow = true;
+light.position.set(-6, 2, 8).normalize();
 light.rotation.y = -.7;
-//light.intensity = 0.5;
 scene.add(light);
+scene.add(light.target);
+
 
 const cords = [
     new THREE.Vector3(-6, 2, 8),
@@ -35,16 +37,27 @@ loader.load("cave.glb", function(gltf) {
     console.error(e);
 });
 
-// todo maybe create some way to set cords to which it should go
-// and use analyticka geometrie
-
 let destination = cords[0];
 let pos_vector;
-let fragment = 0.005;
 let rotation;
 
+function createFragmentFunction(steps) {
+    let sum = 0;
+    for (let i = 0; i < steps; i++) {
+        sum += Math.sin((i*Math.PI)/steps);
+    }
+
+    return (x) => (1/sum) * Math.sin((Math.PI*x)/steps);
+}
+
+const steps = 200;
+let getFragment = createFragmentFunction(steps);
+
+let i = steps;
+
 function animate() {
-    if (camera.position.distanceTo(destination) < 0.0001) {
+//    if (camera.position.distanceTo(destination) < 0.1) {
+      if (i == steps) {
         destination = cords[Math.floor(Math.random() * cords.length)];
         // BAHAHAHAAH ANALYTICKA GEOMETRIE ZMRDI
         pos_vector = new THREE.Vector3(
@@ -52,14 +65,22 @@ function animate() {
             destination.y - camera.position.y,
             destination.z - camera.position.z,
         );
-        rotation = pos_vector.angleTo(new THREE.Vector3(0, 0, -1));
-        return;
+        rotation = pos_vector.angleTo(new THREE.Vector3(0, 0, 1));
+
+        i = 0;
     }
 
+    let fragment = getFragment(i);
+    i++;
     camera.position.x += pos_vector.x * fragment;
     camera.position.y += pos_vector.y * fragment;
     camera.position.z += pos_vector.z * fragment;
     camera.rotation.y += rotation * fragment; 
+
+    light.position.copy(camera.position)
+    let direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    light.target.position.copy(light.position.clone().add(direction));
 
     renderer.render( scene, camera );
 }
