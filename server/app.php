@@ -40,4 +40,13 @@ $worker->onMessage = function(ConnectionInterface $connection, string $data) use
     $connection->send("U DONT RESPECT THE PROTOCOL, EXECUTION DATE: ".(new DateTime())->setTimestamp(microtime() + rand(1000, 100000000000))->format(DATE_ISO8601));
 };
 
+$worker->onClose = function(ConnectionInterface $connection) use ($portals) {
+    foreach ($portals as $index => $portal) {
+        if ($portal == $connection) {
+            unset($portals[$index]);
+        }
+        
+    }
+};
+
 Worker::runAll();
