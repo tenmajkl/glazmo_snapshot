@@ -16,7 +16,6 @@ light.rotation.y = -.7;
 scene.add(light);
 scene.add(light.target);
 
-
 const cords = [
     new THREE.Vector3(-6, 2, 8),
     new THREE.Vector3(1, 2, -4),
@@ -41,6 +40,7 @@ let destination = cords[0];
 let pos_vector;
 let rotation;
 
+// todo doladit neco jako map ve wiringu?
 function createFragmentFunction(steps) {
     let sum = 0;
     for (let i = 0; i < steps; i++) {
@@ -50,14 +50,14 @@ function createFragmentFunction(steps) {
     return (x) => (1/sum) * Math.sin((Math.PI*x)/steps);
 }
 
-const steps = 200;
+let steps = 200;
 let getFragment = createFragmentFunction(steps);
 
-let i = steps;
+let i = steps + 1;
 
 function animate() {
 //    if (camera.position.distanceTo(destination) < 0.1) {
-      if (i == steps) {
+      if (i > steps) {
         destination = cords[Math.floor(Math.random() * cords.length)];
         // BAHAHAHAAH ANALYTICKA GEOMETRIE ZMRDI
         pos_vector = new THREE.Vector3(
@@ -65,7 +65,12 @@ function animate() {
             destination.y - camera.position.y,
             destination.z - camera.position.z,
         );
-        rotation = pos_vector.angleTo(new THREE.Vector3(0, 0, 1));
+        let direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        // rotace jsou divny
+        rotation = pos_vector.angleTo(direction);
+        steps = pos_vector.length() * 10;
+        getFragment = createFragmentFunction(steps);
 
         i = 0;
     }
