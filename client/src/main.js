@@ -153,25 +153,30 @@ let timeout = false;
 let strobing = false;
 const glazmo = document.getElementById("GLAZMO");
 
+
+function glazmoPico(bank) {
+    const sample = Math.floor(Math.random() * banks[bank - 1]);
+    const audio = new Audio('impakts/' + bank + '-' + sample + '.mp3');
+   // let interval = setInterval(function() {
+   //     glazmo.style.display = strobing ? "block" : "none";
+   //     strobing = !strobing;
+   // }, 10);
+    audio.volume = 0.3;
+    audio.play();
+//    audio.onended = () => { clearInterval(interval); glazmo.style.display = "none"; };
+ //   timeout = true;
+  //  setTimeout(() => timeout = false, 250);
+
+
+}
+
 function onMIDIMessage(event) {
     if (timeout || event.data[1] == 1) {
         return;
     }
 
     const bank = event.data[1] - 35;
-    const sample = Math.floor(Math.random() * banks[bank - 1]);
-    const audio = new Audio('impakts/' + bank + '-' + sample + '.mp3');
-    let interval = setInterval(function() {
-        glazmo.style.display = strobing ? "block" : "none";
-        strobing = !strobing;
-    }, 10);
-    audio.volume = 0.5;
-    audio.play();
-    audio.onended = () => { clearInterval(interval); glazmo.style.display = "none"; };
-    timeout = true;
-    setTimeout(() => timeout = false, 250);
-
-
+    glazmoPico(bank)
     // UZ JENOM STROBOSKOPY A MAME HOTOVO
     // a mozna jeste jeden scan
 }
@@ -180,7 +185,7 @@ function onMIDISuccess(midi) {
   console.log("MIDI ready!");
   for (const entry of midi.inputs) {
     const i = entry[1];
-    if (i.name == "LPD8:LPD8 MIDI 1 20:0") {
+    if (i.name.startsWith("LPD8")) {
         i.onmidimessage = onMIDIMessage;
         console.log(entry)
         break;
@@ -188,6 +193,7 @@ function onMIDISuccess(midi) {
   }
 }
 
+window.onkeydown = (event) => event.key >= 1 && event.key <= 8 ? glazmoPico(event.key) : undefined;
 
 
 function onMIDIFailure(msg) {
